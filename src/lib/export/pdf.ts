@@ -1,22 +1,22 @@
 /**
- * PDF export embedding a high-resolution PNG of the QR (no distortion).
+ * Vector PDF export using the same SVG as preview.
  */
 import { jsPDF } from 'jspdf'
-import { renderQrToCanvas, type CanvasRenderOptions } from '@/lib/qr/render-canvas'
+import { type CanvasRenderOptions } from '@/lib/qr/render-canvas'
+import { renderQrSvg } from '@/lib/qr/render-svg'
+import 'svg2pdf.js'
 import { downloadBlob } from '@/lib/export/download'
 import { buildExportFilename } from '@/lib/export/filename'
 
-export async function exportPdf (
+export async function exportPdf(
 	value: string,
 	options: CanvasRenderOptions,
 	toolId: string,
 ): Promise<void> {
-	// Render at high res for sharp embedding
-	const canvas = await renderQrToCanvas(value, {
-		...options,
-		size: Math.max(options.size, 1024),
-	})
-	const dataUrl = canvas.toDataURL('image/png')
+	const svg = new DOMParser().parseFromString(
+		renderQrSvg(value, options),
+		'image/svg+xml',
+	).documentElement
 
 	const doc = new jsPDF({
 		orientation: 'portrait',
@@ -27,10 +27,17 @@ export async function exportPdf (
 	const qrMm = 80
 	const x = (pageWidth - qrMm) / 2
 	const y = 40
-	doc.addImage(dataUrl, 'PNG', x, y, qrMm, qrMm)
+	await doc.svg(svg as unknown as SVGElement, {
+		x,
+		y,
+		width: qrMm,
+		height: qrMm,
+	})
 	doc.setFontSize(10)
 	doc.setTextColor(100)
-	doc.text('QR-PR · qr-pr.ru', pageWidth / 2, y + qrMm + 12, { align: 'center' })
+	doc.text('QR-PR · qr-pr.ru', pageWidth / 2, y + qrMm + 12, {
+		align: 'center',
+	})
 
 	const blob = doc.output('blob')
 	downloadBlob(blob, buildExportFilename(toolId, 'pdf'))

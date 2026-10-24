@@ -43,3 +43,9 @@ docker compose build # BLOCKED — Docker Desktop daemon not running in CI works
 ## READY FOR QA criteria
 
 All functional MVP criteria met except Docker image build verification on this machine (config present; daemon was down).
+
+## Independent pre-release audit
+
+The original 38-test report above describes the baseline only. For the later independent audit,
+confirmed defects, expanded regression coverage and measured limitations, see
+[PRE_RELEASE_AUDIT.md](PRE_RELEASE_AUDIT.md). Do not treat baseline results as current release evidence.

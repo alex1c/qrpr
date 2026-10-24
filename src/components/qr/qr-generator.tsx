@@ -11,15 +11,14 @@ import { QrTypeForm } from '@/components/qr/forms'
 import { QrPreview } from '@/components/qr/qr-preview'
 import { QrStylePanel } from '@/components/qr/qr-style-panel'
 import { QrExportBar } from '@/components/qr/qr-export-bar'
+import { useHydrated } from '@/lib/utils/use-hydrated'
+import { encodeMatrix } from '@/lib/qr/encode-matrix'
 import { DEFAULT_STYLE } from '@/lib/qr/presets'
-import {
-	serializeQrPayload,
-	validateQrPayload,
-} from '@/lib/qr/serializers'
+import { serializeQrPayload, validateQrPayload } from '@/lib/qr/serializers'
 import { cn } from '@/lib/utils/cn'
 import type { QrPayloadMap, QrStyleOptions, QrToolId } from '@/types/qr'
 
-export function QrGenerator ({
+export function QrGenerator({
 	initialType = 'url',
 	lockType = false,
 	showTypeNav = true,
@@ -31,9 +30,10 @@ export function QrGenerator ({
 	showTypeNav?: boolean
 	forceLogoHint?: boolean
 }) {
+	const hydrated = useHydrated()
 	const [type, setType] = useState<QrToolId>(initialType)
-	const [payload, setPayload] = useState<QrPayloadMap[QrToolId]>(
-		() => emptyPayload(initialType),
+	const [payload, setPayload] = useState<QrPayloadMap[QrToolId]>(() =>
+		emptyPayload(initialType),
 	)
 	const [style, setStyle] = useState<QrStyleOptions>(() => ({
 		...DEFAULT_STYLE,
@@ -51,13 +51,18 @@ export function QrGenerator ({
 			return ''
 		}
 		try {
-			return serializeQrPayload(type, payload as never)
+			const value = serializeQrPayload(type, payload as never)
+			encodeMatrix(value, {
+				errorCorrection: style.errorCorrection,
+				margin: style.margin,
+			})
+			return value
 		} catch {
 			return ''
 		}
-	}, [type, payload, validationError])
+	}, [type, payload, validationError, style.errorCorrection, style.margin])
 
-	function handleTypeChange (next: QrToolId) {
+	function handleTypeChange(next: QrToolId) {
 		setType(next)
 		setPayload(emptyPayload(next))
 	}
@@ -65,19 +70,23 @@ export function QrGenerator ({
 	const tool = getToolById(type)
 
 	return (
-		<div className="space-y-6">
+		<fieldset
+			disabled={!hydrated}
+			aria-label="Генератор QR"
+			className="min-w-0 space-y-6"
+		>
 			{showTypeNav && !lockType ? (
 				<div
 					className="flex flex-wrap gap-2"
-					role="tablist"
+					role="group"
 					aria-label="Тип QR-кода"
 				>
 					{QR_TOOLS.map((item) => (
 						<button
 							key={item.id}
 							type="button"
-							role="tab"
-							aria-selected={type === item.id}
+
+							aria-pressed={type === item.id}
 							className={cn(
 								'rounded-full border px-3.5 py-2 text-sm font-medium transition-colors min-h-[44px]',
 								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]',
@@ -95,9 +104,15 @@ export function QrGenerator ({
 
 			{lockType ? (
 				<p className="text-sm text-[var(--ink-muted)]">
-					Тип: <span className="font-medium text-[var(--ink)]">{tool.shortTitle}</span>
+					Тип:{' '}
+					<span className="font-medium text-[var(--ink)]">
+						{tool.shortTitle}
+					</span>
 					{' · '}
-					<Link href="/generator" className="text-[var(--accent)] hover:underline">
+					<Link
+						href="/generator"
+						className="text-[var(--accent)] hover:underline"
+					>
 						Все типы в генераторе
 					</Link>
 				</p>
@@ -114,12 +129,19 @@ export function QrGenerator ({
 							payload={payload as never}
 							onChange={(next) => setPayload(next)}
 						/>
-						{validationError ? (
-							<p className="mt-3 text-sm text-[var(--ink-muted)]" aria-live="polite">
-								{validationError}
+						{validationError || (!encoded && !validationError) ? (
+							<p
+								className="mt-3 text-sm text-[var(--ink-muted)]"
+								aria-live="polite"
+							>
+								{validationError ??
+									'Данные не помещаются в QR при выбранном уровне коррекции. Сократите содержимое.'}
 							</p>
 						) : encoded ? (
-							<p className="mt-3 text-sm text-emerald-700 dark:text-emerald-400" aria-live="polite">
+							<p
+								className="mt-3 text-sm text-emerald-700 dark:text-emerald-400"
+								aria-live="polite"
+							>
 								Готово к скачиванию
 							</p>
 						) : null}
@@ -163,6 +185,6 @@ export function QrGenerator ({
 					</div>
 				</section>
 			</div>
-		</div>
+		</fieldset>
 	)
 }

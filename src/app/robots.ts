@@ -7,7 +7,7 @@ export default function robots (): MetadataRoute.Robots {
 			userAgent: '*',
 			allow: '/',
 			// Avoid indexing hypothetical future query-param duplicates
-			disallow: ['/api/', '/_next/'],
+			disallow: ['/api/'],
 		},
 		sitemap: `${SITE_URL}/sitemap.xml`,
 		host: SITE_URL,

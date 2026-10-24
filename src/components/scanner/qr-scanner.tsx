@@ -14,11 +14,13 @@ import {
 } from '@/lib/scanner/detect-type'
 import { copyTextToClipboard } from '@/lib/export/clipboard'
 import type { DecodeResult } from '@/types/qr'
+import { useHydrated } from '@/lib/utils/use-hydrated'
 import { cn } from '@/lib/utils/cn'
 
 const ACCEPT = 'image/png,image/jpeg,image/webp'
 
-export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
+export function QrScanner({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
+	const hydrated = useHydrated()
 	const [result, setResult] = useState<DecodeResult | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [status, setStatus] = useState<string | null>(null)
@@ -28,8 +30,13 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 	const streamRef = useRef<MediaStream | null>(null)
 	const rafRef = useRef<number | null>(null)
 	const inputRef = useRef<HTMLInputElement>(null)
+	const cameraRequest = useRef(0)
+	const cameraPending = useRef(false)
 
 	const stopCamera = useCallback(() => {
+		cameraRequest.current += 1
+		cameraPending.current = false
+		if (videoRef.current) videoRef.current.srcObject = null
 		if (rafRef.current) {
 			cancelAnimationFrame(rafRef.current)
 			rafRef.current = null
@@ -41,11 +48,11 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 
 	useEffect(() => () => stopCamera(), [stopCamera])
 
-	async function processFile (file: File) {
+	async function processFile(file: File) {
 		setError(null)
 		setResult(null)
 		setStatus(null)
-		if (!ACCEPT.split(',').includes(file.type) && !file.type.startsWith('image/')) {
+		if (!ACCEPT.split(',').includes(file.type)) {
 			setError('Поддерживаются PNG, JPEG и WebP')
 			return
 		}
@@ -67,7 +74,7 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 		}
 	}
 
-	async function handlePaste (e: React.ClipboardEvent) {
+	async function handlePaste(e: React.ClipboardEvent) {
 		const items = e.clipboardData?.items
 		if (!items) {
 			return
@@ -84,7 +91,8 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 		}
 	}
 
-	async function startCamera () {
+	async function startCamera() {
+		if (cameraPending.current || streamRef.current) return
 		setError(null)
 		setResult(null)
 		if (!window.isSecureContext) {
@@ -97,20 +105,28 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 			setError('Камера не поддерживается в этом браузере')
 			return
 		}
+		const request = ++cameraRequest.current
+		cameraPending.current = true
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
 				video: { facingMode: { ideal: 'environment' } },
 				audio: false,
 			})
+			if (request !== cameraRequest.current) {
+				stream.getTracks().forEach((track) => track.stop())
+				return
+			}
+			cameraPending.current = false
 			streamRef.current = stream
 			setCameraOn(true)
 			const video = videoRef.current
 			if (video) {
 				video.srcObject = stream
 				await video.play()
-				scanLoop()
+				if (request === cameraRequest.current) scanLoop()
 			}
 		} catch {
+			if (request !== cameraRequest.current) return
 			setError(
 				'Нет доступа к камере. Разрешите доступ в браузере или загрузите изображение.',
 			)
@@ -118,7 +134,8 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 		}
 	}
 
-	function scanLoop () {
+	function scanLoop() {
+		if (!streamRef.current) return
 		const video = videoRef.current
 		if (!video || video.readyState < 2) {
 			rafRef.current = requestAnimationFrame(scanLoop)
@@ -147,7 +164,12 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 	const analysis = result ? analyzeUrl(result.raw) : null
 
 	return (
-		<div className="space-y-6" onPaste={handlePaste}>
+		<fieldset
+			disabled={!hydrated}
+			aria-label="Сканер QR"
+			className="min-w-0 space-y-6"
+			onPaste={handlePaste}
+		>
 			<div
 				className={cn(
 					'rounded-2xl border-2 border-dashed p-8 text-center transition-colors',
@@ -170,15 +192,18 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 				}}
 			>
 				<p className="mb-4 text-[var(--ink)]">
-					Перетащите изображение QR сюда, вставьте из буфера (Ctrl+V) или выберите файл
+					Перетащите изображение QR сюда, вставьте из буфера (Ctrl+V) или
+					выберите файл
 				</p>
 				<input
 					ref={inputRef}
+					aria-label="Изображение QR-кода"
 					type="file"
 					accept={ACCEPT}
 					className="sr-only"
 					onChange={(e) => {
 						const file = e.target.files?.[0]
+						e.target.value = ''
 						if (file) {
 							void processFile(file)
 						}
@@ -203,21 +228,26 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 				</p>
 			</div>
 
-			{cameraOn ? (
-				<div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-black">
-					<video
-						ref={videoRef}
-						className="mx-auto max-h-[420px] w-full object-contain"
-						playsInline
-						muted
-						aria-label="Поток с камеры"
-					/>
-				</div>
-			) : (
-				<video ref={videoRef} className="hidden" playsInline muted />
-			)}
+			<div
+				className={
+					cameraOn
+						? 'overflow-hidden rounded-2xl border border-[var(--border)] bg-black'
+						: 'hidden'
+				}
+			>
+				<video
+					ref={videoRef}
+					className="mx-auto max-h-[420px] w-full object-contain"
+					playsInline
+					muted
+					aria-label="Поток с камеры"
+				/>
+			</div>
 
-			<div aria-live="polite" className="min-h-[1.25rem] text-sm text-[var(--ink-muted)]">
+			<div
+				aria-live="polite"
+				className="min-h-[1.25rem] text-sm text-[var(--ink-muted)]"
+			>
 				{status}
 			</div>
 			{error ? (
@@ -285,8 +315,14 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 							type="button"
 							variant="secondary"
 							onClick={async () => {
-								await copyTextToClipboard(result.raw)
-								setStatus('Скопировано')
+								try {
+									await copyTextToClipboard(result.raw)
+									setStatus('Скопировано')
+								} catch {
+									setError(
+										'Не удалось скопировать. Разрешите доступ к буферу обмена.',
+									)
+								}
 							}}
 						>
 							Копировать
@@ -296,17 +332,18 @@ export function QrScanner ({ mode = 'scan' }: { mode?: 'scan' | 'check' }) {
 								href={result.raw}
 								target="_blank"
 								rel="noopener noreferrer nofollow"
-								className="inline-flex h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-4 text-sm font-medium text-white hover:bg-[var(--accent-hover)]"
+								className="inline-flex h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-4 text-sm font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]"
 							>
 								Открыть ссылку
 							</a>
 						) : null}
 					</div>
 					<p className="text-xs text-[var(--ink-faint)]">
-						Ссылки не открываются автоматически. Перед переходом проверьте адрес.
+						Ссылки не открываются автоматически. Перед переходом проверьте
+						адрес.
 					</p>
 				</div>
 			) : null}
-		</div>
+		</fieldset>
 	)
 }

@@ -381,7 +381,7 @@ function LocationForm ({
 					step="any"
 					value={Number.isFinite(value.latitude) ? value.latitude : ''}
 					onChange={(e) =>
-						onChange({ ...value, latitude: Number(e.target.value) })
+						onChange({ ...value, latitude: e.target.valueAsNumber })
 					}
 				/>
 			</Field>
@@ -392,7 +392,7 @@ function LocationForm ({
 					step="any"
 					value={Number.isFinite(value.longitude) ? value.longitude : ''}
 					onChange={(e) =>
-						onChange({ ...value, longitude: Number(e.target.value) })
+						onChange({ ...value, longitude: e.target.valueAsNumber })
 					}
 				/>
 			</Field>
@@ -417,7 +417,7 @@ function EventForm ({
 				/>
 			</Field>
 			<div className="grid gap-4 sm:grid-cols-2">
-				<Field label="Начало" htmlFor="ev-start">
+				<Field label="Начало" htmlFor="ev-start" hint="Местное время в часовом поясе вашего устройства">
 					<Input
 						id="ev-start"
 						type="datetime-local"

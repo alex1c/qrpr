@@ -7,6 +7,10 @@ services:
     build: .
     container_name: qrpr
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     env_file:
       - .env
     environment:

@@ -22,7 +22,7 @@ function getServerSnapshot () {
 export function ThemeToggle () {
 	const { theme, setTheme, resolvedTheme } = useTheme()
 	const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
-	const isDark = (resolvedTheme ?? theme) === 'dark'
+	const isDark = mounted && (resolvedTheme ?? theme) === 'dark'
 
 	return (
 		<Button

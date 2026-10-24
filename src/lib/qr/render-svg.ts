@@ -18,7 +18,12 @@ export interface SvgRenderOptions {
 	logoSizeRatio?: number
 }
 
-function isInFinderPattern (row: number, col: number, size: number, margin: number): boolean {
+function isInFinderPattern(
+	row: number,
+	col: number,
+	size: number,
+	margin: number,
+): boolean {
 	const core = size - margin * 2
 	const inTopLeft = row < margin + 7 && col < margin + 7
 	const inTopRight = row < margin + 7 && col >= margin + core - 7
@@ -26,15 +31,17 @@ function isInFinderPattern (row: number, col: number, size: number, margin: numb
 	return inTopLeft || inTopRight || inBottomLeft
 }
 
-function modulePath (
+function modulePath(
 	x: number,
 	y: number,
 	module: number,
 	style: DotStyle,
 ): string {
-	const pad = style === 'dots' ? module * 0.2 : style === 'rounded' ? module * 0.05 : 0
+	const pad =
+		style === 'dots' ? module * 0.02 : style === 'rounded' ? module * 0.05 : 0
 	const w = module - pad * 2
-	const rx = style === 'square' ? 0 : style === 'rounded' ? module * 0.25 : w / 2
+	const rx =
+		style === 'square' ? 0 : style === 'rounded' ? module * 0.25 : w / 2
 	const cx = x + pad
 	const cy = y + pad
 	if (style === 'dots') {
@@ -47,7 +54,7 @@ function modulePath (
 	return `<rect x="${cx}" y="${cy}" width="${w}" height="${w}" rx="${rx}" ry="${rx}" />`
 }
 
-function eyeElement (
+function eyeElement(
 	originX: number,
 	originY: number,
 	module: number,
@@ -57,9 +64,12 @@ function eyeElement (
 	const outer = 7 * module
 	const mid = 5 * module
 	const inner = 3 * module
-	const outerR = style === 'square' ? 0 : style === 'rounded' ? module : module * 1.5
-	const midR = style === 'square' ? 0 : style === 'rounded' ? module * 0.7 : module
-	const innerR = style === 'square' ? 0 : style === 'rounded' ? module * 0.4 : module * 0.5
+	const outerR =
+		style === 'square' ? 0 : style === 'rounded' ? module : module * 1.5
+	const midR =
+		style === 'square' ? 0 : style === 'rounded' ? module * 0.7 : module
+	const innerR =
+		style === 'square' ? 0 : style === 'rounded' ? module * 0.4 : module * 0.5
 
 	const ox = originX
 	const oy = originY
@@ -68,17 +78,15 @@ function eyeElement (
 	const ix = originX + 2 * module
 	const iy = originY + 2 * module
 
-	return [
-		`<rect x="${ox}" y="${oy}" width="${outer}" height="${outer}" rx="${outerR}" ry="${outerR}" fill="${fg}" />`,
-		`<rect x="${mx}" y="${my}" width="${mid}" height="${mid}" rx="${midR}" ry="${midR}" fill="var(--qr-bg, #fff)" />`,
-		`<rect x="${ix}" y="${iy}" width="${inner}" height="${inner}" rx="${innerR}" ry="${innerR}" fill="${fg}" />`,
-	].join('')
+	const rectPath = (x: number, y: number, w: number, r: number) =>
+		`M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${w - 2 * r}a${r} ${r} 0 0 1 ${-r} ${r}h${2 * r - w}a${r} ${r} 0 0 1 ${-r} ${-r}v${2 * r - w}a${r} ${r} 0 0 1 ${r} ${-r}Z`
+	return `<path fill="${fg}" fill-rule="evenodd" d="${rectPath(ox, oy, outer, outerR)} ${rectPath(mx, my, mid, midR)}" /><rect x="${ix}" y="${iy}" width="${inner}" height="${inner}" rx="${innerR}" fill="${fg}" />`
 }
 
 /**
  * Render QR payload as an SVG string.
  */
-export function renderQrSvg (value: string, options: SvgRenderOptions): string {
+export function renderQrSvg(value: string, options: SvgRenderOptions): string {
 	const matrix = encodeMatrix(value, {
 		errorCorrection: options.errorCorrection,
 		margin: options.margin,
@@ -88,17 +96,25 @@ export function renderQrSvg (value: string, options: SvgRenderOptions): string {
 	const moduleSize = pixelSize / modules
 	const bg = options.transparentBackground ? 'none' : options.bgColor
 	const fg = options.fgColor
+	if (![fg, options.bgColor].every((color) => /^#[0-9a-fA-F]{6}$/.test(color)))
+		throw new Error('Некорректный цвет')
+	if (
+		options.logoDataUrl &&
+		!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(
+			options.logoDataUrl,
+		)
+	)
+		throw new Error('Логотип должен быть безопасным растровым изображением')
 
 	const parts: string[] = []
 	parts.push(
 		`<svg xmlns="http://www.w3.org/2000/svg" width="${pixelSize}" height="${pixelSize}" viewBox="0 0 ${pixelSize} ${pixelSize}" role="img" aria-label="QR code">`,
 	)
-	parts.push(`<style>:root{--qr-bg:${options.transparentBackground ? '#ffffff' : options.bgColor}}</style>`)
+
 	if (bg !== 'none') {
 		parts.push(`<rect width="100%" height="100%" fill="${bg}" />`)
 	} else {
-		// Keep white under eyes when transparent so cutouts remain visible on dark surfaces optionally —
-		// eyes use CSS var; for true transparency we still draw a white plate only under finder if needed.
+		// Finder cutouts remain transparent; a logo still receives its contrast plate.
 		parts.push(`<!-- transparent background -->`)
 	}
 
@@ -128,7 +144,7 @@ export function renderQrSvg (value: string, options: SvgRenderOptions): string {
 					col * moduleSize,
 					row * moduleSize,
 					moduleSize,
-					options.dotStyle,
+					types[row][col] === QrCodeDataType.Data ? options.dotStyle : 'square',
 				),
 			)
 		}
@@ -165,7 +181,7 @@ export function renderQrSvg (value: string, options: SvgRenderOptions): string {
 	return parts.join('')
 }
 
-function escapeXmlAttr (value: string): string {
+function escapeXmlAttr(value: string): string {
 	return value
 		.replace(/&/g, '&amp;')
 		.replace(/"/g, '&quot;')

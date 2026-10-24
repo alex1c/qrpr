@@ -3,17 +3,14 @@
 /**
  * Appearance controls: colors, ECC, module styles, logo, presets.
  */
+import { useState } from 'react'
 import { Field, Input, Select } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-	DEFAULT_STYLE,
-	MAX_LOGO_RATIO,
-	STYLE_PRESETS,
-} from '@/lib/qr/presets'
+import { DEFAULT_STYLE, MAX_LOGO_RATIO, STYLE_PRESETS } from '@/lib/qr/presets'
 import { getStyleWarnings } from '@/lib/qr/contrast'
 import type { QrStyleOptions, StylePresetId } from '@/types/qr'
 
-export function QrStylePanel ({
+export function QrStylePanel({
 	style,
 	onChange,
 }: {
@@ -21,12 +18,13 @@ export function QrStylePanel ({
 	onChange: (next: QrStyleOptions) => void
 }) {
 	const warnings = getStyleWarnings(style)
+	const [logoError, setLogoError] = useState<string | null>(null)
 
-	function patch (partial: Partial<QrStyleOptions>) {
+	function patch(partial: Partial<QrStyleOptions>) {
 		onChange({ ...style, ...partial })
 	}
 
-	function applyPreset (id: StylePresetId) {
+	function applyPreset(id: StylePresetId) {
 		const preset = STYLE_PRESETS[id]
 		onChange({
 			...style,
@@ -35,32 +33,60 @@ export function QrStylePanel ({
 		})
 	}
 
-	function handleLogo (file: File | null) {
+	async function handleLogo(file: File | null) {
+		setLogoError(null)
 		if (!file) {
 			patch({ logoDataUrl: null })
 			return
 		}
-		if (!file.type.startsWith('image/')) {
+		if (
+			!['image/png', 'image/svg+xml', 'image/jpeg', 'image/webp'].includes(
+				file.type,
+			) ||
+			file.size > 2 * 1024 * 1024
+		) {
+			setLogoError('Выберите PNG, SVG, JPEG или WebP до 2 МБ')
 			return
 		}
-		const reader = new FileReader()
-		reader.onload = () => {
-			const dataUrl = String(reader.result)
-			const nextEcc =
-				style.errorCorrection === 'L' || style.errorCorrection === 'M'
-					? 'Q'
-					: style.errorCorrection
+		const url = URL.createObjectURL(file)
+		try {
+			const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+				const img = new Image()
+				img.onload = () => resolve(img)
+				img.onerror = reject
+				img.src = url
+			})
+			if (
+				!image.naturalWidth ||
+				!image.naturalHeight ||
+				image.naturalWidth * image.naturalHeight > 16_000_000
+			)
+				throw new Error('Размер изображения')
+			const canvas = document.createElement('canvas')
+			const scale = Math.min(
+				1,
+				1024 / Math.max(image.naturalWidth, image.naturalHeight),
+			)
+			canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+			canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+			const ctx = canvas.getContext('2d')
+			if (!ctx) throw new Error('Canvas')
+			ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
 			patch({
-				logoDataUrl: dataUrl,
-				errorCorrection: nextEcc,
+				logoDataUrl: canvas.toDataURL('image/png'),
+				errorCorrection: 'H',
 				logoSizeRatio: Math.min(style.logoSizeRatio, MAX_LOGO_RATIO),
 			})
+		} catch {
+			setLogoError('Не удалось прочитать логотип')
+		} finally {
+			URL.revokeObjectURL(url)
 		}
-		reader.readAsDataURL(file)
 	}
 
 	return (
 		<div className="space-y-4">
+			{logoError ? <p role="alert">{logoError}</p> : null}
 			<div>
 				<p className="mb-2 text-sm font-semibold text-[var(--ink)]">Пресеты</p>
 				<div className="flex flex-wrap gap-2">
@@ -112,7 +138,8 @@ export function QrStylePanel ({
 						value={style.errorCorrection}
 						onChange={(e) =>
 							patch({
-								errorCorrection: e.target.value as QrStyleOptions['errorCorrection'],
+								errorCorrection: e.target
+									.value as QrStyleOptions['errorCorrection'],
 							})
 						}
 					>

@@ -8,7 +8,7 @@ export const DEFAULT_STYLE: QrStyleOptions = {
 	bgColor: '#FFFFFF',
 	transparentBackground: false,
 	size: 320,
-	margin: 2,
+	margin: 4,
 	errorCorrection: 'M',
 	dotStyle: 'square',
 	eyeStyle: 'square',

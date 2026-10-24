@@ -8,8 +8,30 @@ import type { EventPayload } from '@/types/qr'
 /**
  * Convert datetime-local / ISO-ish input to UTC iCal form YYYYMMDDTHHMMSSZ.
  */
-export function toIcalUtc (input: string): string {
+export function toIcalUtc(input: string): string {
+	const parts =
+		/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})?$/.exec(
+			input,
+		)
+	if (!parts) throw new Error('Некорректная дата')
+	const [, year, month, day, hour, minute, second = '0', zone] = parts
+	const days = new Date(Date.UTC(Number(year), Number(month), 0)).getUTCDate()
+	if (
+		Number(month) < 1 ||
+		Number(month) > 12 ||
+		Number(day) < 1 ||
+		Number(day) > days ||
+		Number(hour) > 23 ||
+		Number(minute) > 59 ||
+		Number(second) > 59
+	)
+		throw new Error('Некорректная дата')
 	const date = new Date(input)
+	if (
+		!zone &&
+		(date.getHours() !== Number(hour) || date.getDate() !== Number(day))
+	)
+		throw new Error('Местное время не существует при переходе часового пояса')
 	if (Number.isNaN(date.getTime())) {
 		throw new Error('Некорректная дата')
 	}
@@ -20,7 +42,7 @@ export function toIcalUtc (input: string): string {
 	)
 }
 
-export function serializeEvent (payload: EventPayload): string {
+export function serializeEvent(payload: EventPayload): string {
 	const title = payload.title.trim()
 	if (!title) {
 		throw new Error('Укажите название события')
@@ -56,17 +78,21 @@ export function serializeEvent (payload: EventPayload): string {
 	]
 
 	if (payload.description.trim()) {
-		lines.push(foldIcalLine(`DESCRIPTION:${escapeIcalText(payload.description.trim())}`))
+		lines.push(
+			foldIcalLine(`DESCRIPTION:${escapeIcalText(payload.description.trim())}`),
+		)
 	}
 	if (payload.location.trim()) {
-		lines.push(foldIcalLine(`LOCATION:${escapeIcalText(payload.location.trim())}`))
+		lines.push(
+			foldIcalLine(`LOCATION:${escapeIcalText(payload.location.trim())}`),
+		)
 	}
 
 	lines.push('END:VEVENT', 'END:VCALENDAR')
 	return lines.join('\r\n')
 }
 
-function hashString (value: string): number {
+function hashString(value: string): number {
 	let hash = 0
 	for (let i = 0; i < value.length; i += 1) {
 		hash = (hash << 5) - hash + value.charCodeAt(i)
@@ -75,7 +101,7 @@ function hashString (value: string): number {
 	return hash
 }
 
-export function validateEvent (payload: EventPayload): string | null {
+export function validateEvent(payload: EventPayload): string | null {
 	try {
 		serializeEvent(payload)
 		return null

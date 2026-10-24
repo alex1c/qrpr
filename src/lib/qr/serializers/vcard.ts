@@ -1,7 +1,7 @@
 /**
  * vCard 3.0 serialization for contact QR codes.
  */
-import { escapeVCardValue } from '@/lib/qr/escape'
+import { escapeVCardValue, foldIcalLine } from '@/lib/qr/escape'
 import type { VCardPayload } from '@/types/qr'
 
 export function serializeVCard (payload: VCardPayload): string {
@@ -40,7 +40,7 @@ export function serializeVCard (payload: VCardPayload): string {
 	}
 
 	lines.push('END:VCARD')
-	return lines.join('\n')
+	return lines.map(foldIcalLine).join('\r\n')
 }
 
 export function validateVCard (payload: VCardPayload): string | null {

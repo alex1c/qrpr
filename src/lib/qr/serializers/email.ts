@@ -3,7 +3,7 @@
  */
 import type { EmailPayload } from '@/types/qr'
 
-export function serializeEmail (payload: EmailPayload): string {
+export function serializeEmail(payload: EmailPayload): string {
 	const address = payload.address.trim()
 	if (!address) {
 		throw new Error('Укажите адрес email')
@@ -12,19 +12,21 @@ export function serializeEmail (payload: EmailPayload): string {
 		throw new Error('Некорректный адрес email')
 	}
 
-	const params = new URLSearchParams()
+	const params: string[] = []
 	if (payload.subject.trim()) {
-		params.set('subject', payload.subject.trim())
+		params.push(`subject=${encodeURIComponent(payload.subject.trim())}`)
 	}
 	if (payload.body.trim()) {
-		params.set('body', payload.body.trim())
+		params.push(`body=${encodeURIComponent(payload.body.trim())}`)
 	}
 
-	const query = params.toString()
-	return query ? `mailto:${address}?${query}` : `mailto:${address}`
+	const query = params.join('&')
+	return query
+		? `mailto:${encodeURIComponent(address).replace(/%40/g, '@')}?${query}`
+		: `mailto:${encodeURIComponent(address).replace(/%40/g, '@')}`
 }
 
-export function validateEmail (payload: EmailPayload): string | null {
+export function validateEmail(payload: EmailPayload): string | null {
 	try {
 		serializeEmail(payload)
 		return null

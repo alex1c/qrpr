@@ -22,7 +22,7 @@ export function buildPageMetadata (input: PageSeoInput): Metadata {
 		input.title === SITE_NAME ? SITE_NAME : `${input.title} · ${SITE_NAME}`
 
 	return {
-		title: fullTitle,
+		title: { absolute: fullTitle },
 		description: input.description,
 		alternates: {
 			canonical: url,

@@ -12,7 +12,7 @@ export interface NormalizeUrlOptions {
  * Normalize a user-entered URL for QR encoding.
  * Preserves path, query, and hash. Does not strip trailing slashes.
  */
-export function normalizeUrl (
+export function normalizeUrl(
 	raw: string,
 	options: NormalizeUrlOptions = {},
 ): { ok: true; value: string } | { ok: false; error: string } {
@@ -23,11 +23,17 @@ export function normalizeUrl (
 
 	const { addHttpsIfMissing = true } = options
 	let candidate = trimmed
+	if (candidate.startsWith('//')) candidate = `https:${candidate}`
+	if (/^(?:localhost|[^/:?#]+\.[^/:?#]+):\d+(?:[/?#]|$)/i.test(candidate))
+		candidate = `https://${candidate}`
 
 	// Allow scheme-relative-ish input like example.com/path
 	if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(candidate)) {
 		if (!addHttpsIfMissing) {
-			return { ok: false, error: 'Укажите полный URL со схемой http:// или https://' }
+			return {
+				ok: false,
+				error: 'Укажите полный URL со схемой http:// или https://',
+			}
 		}
 		candidate = `https://${candidate}`
 	}
@@ -50,7 +56,7 @@ export function normalizeUrl (
 	return { ok: true, value: parsed.toString() }
 }
 
-export function serializeUrl (raw: string): string {
+export function serializeUrl(raw: string): string {
 	const result = normalizeUrl(raw)
 	if (!result.ok) {
 		throw new Error(result.error)

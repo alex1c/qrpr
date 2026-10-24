@@ -3,13 +3,13 @@
 /**
  * Export actions: PNG sizes, SVG, PDF, clipboard copy.
  */
+import { useHydrated } from '@/lib/utils/use-hydrated'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/input'
 import { PNG_EXPORT_SIZES } from '@/lib/qr/presets'
 import { exportPng } from '@/lib/export/png'
 import { exportSvg } from '@/lib/export/svg'
-import { exportPdf } from '@/lib/export/pdf'
 import { canCopyImage, copyPngToClipboard, copyTextToClipboard } from '@/lib/export/clipboard'
 import type { QrStyleOptions } from '@/types/qr'
 
@@ -24,7 +24,8 @@ export function QrExportBar ({
 	toolId: string
 	disabled?: boolean
 }) {
-	const [pngSize, setPngSize] = useState<number>(512)
+	const hydrated = useHydrated()
+ const [pngSize, setPngSize] = useState<number>(512)
 	const [status, setStatus] = useState<string | null>(null)
 	const [busy, setBusy] = useState(false)
 	const inactive = disabled || !value || busy
@@ -72,6 +73,7 @@ export function QrExportBar ({
 		setBusy(true)
 		setStatus(null)
 		try {
+			const { exportPdf } = await import('@/lib/export/pdf')
 			await exportPdf(value, renderOptions, toolId)
 			setStatus('PDF скачан')
 		} catch (err) {
@@ -138,7 +140,7 @@ export function QrExportBar ({
 				<Button variant="secondary" onClick={handlePdf} disabled={inactive}>
 					PDF
 				</Button>
-				{canCopyImage() ? (
+				{hydrated && canCopyImage() ? (
 					<Button variant="ghost" onClick={handleCopyImage} disabled={inactive}>
 						Копировать PNG
 					</Button>

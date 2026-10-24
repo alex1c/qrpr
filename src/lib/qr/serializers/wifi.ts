@@ -6,7 +6,7 @@ import { escapeWifiValue } from '@/lib/qr/escape'
 import type { WifiPayload } from '@/types/qr'
 
 export function serializeWifi (payload: WifiPayload): string {
-	const ssid = payload.ssid.trim()
+	const ssid = payload.ssid
 	if (!ssid) {
 		throw new Error('Укажите название сети (SSID)')
 	}

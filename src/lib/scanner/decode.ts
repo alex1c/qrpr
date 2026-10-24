@@ -8,10 +8,11 @@ import { detectContentType } from '@/lib/scanner/detect-type'
 
 export interface DecodeOptions {
 	/** Attempt inversion for light-on-dark codes. */
-	inversionAttempts?: 'dontInvert' | 'onlyInvert' | 'attemptBoth' | 'invertFirst'
+	inversionAttempts?:
+		'dontInvert' | 'onlyInvert' | 'attemptBoth' | 'invertFirst'
 }
 
-export function decodeImageData (
+export function decodeImageData(
 	imageData: ImageData,
 	options: DecodeOptions = {},
 ): DecodeResult | null {
@@ -30,12 +31,19 @@ export function decodeImageData (
 /**
  * Draw image onto canvas and decode.
  */
-export async function decodeHtmlImage (
+export async function decodeHtmlImage(
 	image: HTMLImageElement | ImageBitmap,
 	options?: DecodeOptions,
 ): Promise<DecodeResult | null> {
-	const width = 'naturalWidth' in image ? image.naturalWidth || image.width : image.width
-	const height = 'naturalHeight' in image ? image.naturalHeight || image.height : image.height
+	const width =
+		'naturalWidth' in image ? image.naturalWidth || image.width : image.width
+	const height =
+		'naturalHeight' in image
+			? image.naturalHeight || image.height
+			: image.height
+	if (width * height > 16_000_000 || width > 8192 || height > 8192) {
+		throw new Error('Изображение слишком большое')
+	}
 	if (!width || !height) {
 		return null
 	}
@@ -52,7 +60,7 @@ export async function decodeHtmlImage (
 	return decodeImageData(imageData, options)
 }
 
-export async function decodeFile (
+export async function decodeFile(
 	file: File,
 	options?: DecodeOptions,
 ): Promise<DecodeResult | null> {
@@ -64,7 +72,7 @@ export async function decodeFile (
 	}
 }
 
-export async function decodeDataUrl (
+export async function decodeDataUrl(
 	dataUrl: string,
 	options?: DecodeOptions,
 ): Promise<DecodeResult | null> {
@@ -72,7 +80,7 @@ export async function decodeDataUrl (
 	return decodeHtmlImage(image, options)
 }
 
-function loadImage (src: string): Promise<HTMLImageElement> {
+function loadImage(src: string): Promise<HTMLImageElement> {
 	return new Promise((resolve, reject) => {
 		const img = new Image()
 		img.onload = () => resolve(img)

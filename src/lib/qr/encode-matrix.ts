@@ -20,7 +20,7 @@ export function encodeMatrix (
 ): EncodedMatrix {
 	const result = encode(value, {
 		ecc: options.errorCorrection ?? 'M',
-		border: options.margin ?? 2,
+		border: options.margin ?? 4,
 		boostEcc: Boolean(options.errorCorrection === undefined),
 	})
 
