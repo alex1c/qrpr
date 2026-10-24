@@ -42,6 +42,9 @@ export const metadata: Metadata = {
 		email: false,
 		address: false,
 	},
+	verification: {
+		yandex: 'e3493301979bc235',
+	},
 }
 
 export const viewport: Viewport = {
