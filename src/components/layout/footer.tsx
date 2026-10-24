@@ -4,7 +4,11 @@
 import Link from 'next/link'
 import { Logo } from '@/components/layout/logo'
 import { QR_TOOLS, EXTRA_TOOL_PAGES } from '@/config/tools'
-import { SITE_TAGLINE } from '@/config/site'
+import {
+	PROJECT_LINK_LABEL,
+	PROJECT_URL,
+	SITE_TAGLINE,
+} from '@/config/site'
 
 export function Footer () {
 	return (
@@ -13,6 +17,16 @@ export function Footer () {
 				<div className="space-y-3">
 					<Logo />
 					<p className="max-w-xs text-sm text-[var(--ink-muted)]">{SITE_TAGLINE}</p>
+					<p className="text-sm text-[var(--ink-muted)]">
+						<a
+							href={PROJECT_URL}
+							className="text-[var(--accent)] hover:underline"
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							{PROJECT_LINK_LABEL}
+						</a>
+					</p>
 				</div>
 				<div>
 					<p className="mb-3 text-sm font-semibold text-[var(--ink)]">Инструменты</p>
@@ -55,6 +69,16 @@ export function Footer () {
 							<Link href="/terms" className="hover:text-[var(--accent)]">
 								Условия использования
 							</Link>
+						</li>
+						<li>
+							<a
+								href={PROJECT_URL}
+								className="hover:text-[var(--accent)]"
+								rel="noopener noreferrer"
+								target="_blank"
+							>
+								{PROJECT_LINK_LABEL}
+							</a>
 						</li>
 					</ul>
 				</div>

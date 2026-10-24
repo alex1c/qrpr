@@ -1,4 +1,10 @@
 import { Breadcrumbs, Prose } from '@/components/seo/page-shell'
+import {
+	PROJECT_BRAND,
+	PROJECT_LINK_LABEL,
+	PROJECT_URL,
+	SOCIAL,
+} from '@/config/site'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 import Link from 'next/link'
 
@@ -19,12 +25,26 @@ export default function AboutPage () {
 			<Prose>
 				<p>
 					QR-PR помогает быстро создавать статические QR-коды для ссылок, Wi‑Fi,
-					визиток, мессенджеров и других повседневных задач. Фокус MVP — скорость,
-					понятный интерфейс, качественный экспорт и приватность.
+					визиток, мессенджеров и других повседневных задач. Фокус — скорость,
+					понятный интерфейс, качественный экспорт и бережное отношение к данным
+					в полях инструментов.
 				</p>
 				<p>
 					Статическая генерация выполняется в браузере. Мы не требуем регистрацию
 					и не ставим водяные знаки на обычные статические коды.
+				</p>
+				<p>
+					QR-PR развивается как{' '}
+					<a
+						href={PROJECT_URL}
+						className="text-[var(--accent)] hover:underline"
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{PROJECT_LINK_LABEL}
+					</a>
+					. {PROJECT_BRAND} указан как проект / бренд, без утверждения о статусе
+					юридического лица на этой странице.
 				</p>
 				<p>
 					В планах — пакетная генерация, этикетки и динамические QR для бизнеса.
@@ -33,7 +53,7 @@ export default function AboutPage () {
 				<p>
 					Исходный код:{' '}
 					<a
-						href="https://github.com/alex1c/qrpr"
+						href={SOCIAL.github}
 						className="text-[var(--accent)] hover:underline"
 						rel="noopener noreferrer"
 						target="_blank"

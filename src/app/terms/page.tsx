@@ -1,9 +1,11 @@
 import { Breadcrumbs, Prose } from '@/components/seo/page-shell'
 import {
-	CONTACT_EMAIL_PLACEHOLDER,
-	LEGAL_ENTITY_PLACEHOLDER,
+	PROJECT_BRAND,
+	PROJECT_URL,
+	SITE_NAME,
 } from '@/config/site'
 import { buildPageMetadata } from '@/lib/seo/metadata'
+import Link from 'next/link'
 
 export const metadata = buildPageMetadata({
 	title: 'Условия использования',
@@ -21,14 +23,32 @@ export default function TermsPage () {
 			</h1>
 			<Prose>
 				<p>
-					Сервис предоставляется {LEGAL_ENTITY_PLACEHOLDER}. Связь:{' '}
-					{CONTACT_EMAIL_PLACEHOLDER}.
+					Сервис {SITE_NAME} предоставляется в рамках проекта{' '}
+					<a
+						href={PROJECT_URL}
+						className="text-[var(--accent)] hover:underline"
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{PROJECT_BRAND}
+					</a>{' '}
+					(
+					<a
+						href={PROJECT_URL}
+						className="text-[var(--accent)] hover:underline"
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{PROJECT_URL}
+					</a>
+					). Название проекта не используется здесь как подтверждённое
+					юридическое лицо. Полные реквизиты оператора на сайте не опубликованы.
 				</p>
 				<p>
-					QR-PR предоставляет инструменты для создания, оформления, считывания и
-					базовой проверки QR-кодов. Сервис предоставляется «как есть», без
-					гарантий бесперебойной работы и совместимости со всеми устройствами и
-					приложениями.
+					{SITE_NAME} предоставляет инструменты для создания, оформления,
+					считывания и базовой проверки QR-кодов. Сервис предоставляется «как
+					есть», без гарантий бесперебойной работы и совместимости со всеми
+					устройствами и приложениями.
 				</p>
 				<p>
 					Вы несёте ответственность за содержимое, которое кодируете (включая
@@ -41,9 +61,19 @@ export default function TermsPage () {
 					автоматически.
 				</p>
 				<p>
-					Условия будут обновлены после указания полных реквизитов владельца.
+					Использование необязательной аналитики (Яндекс Метрика) описано в{' '}
+					<Link href="/privacy" className="text-[var(--accent)] hover:underline">
+						политике конфиденциальности
+					</Link>{' '}
+					и возможно только после вашего согласия.
+				</p>
+				<p>
 					Продолжая пользоваться сайтом, вы принимаете актуальную версию этого
-					документа.
+					документа. Контакты — на странице{' '}
+					<Link href="/contact" className="text-[var(--accent)] hover:underline">
+						/contact
+					</Link>
+					.
 				</p>
 			</Prose>
 		</div>

@@ -39,6 +39,7 @@ docker compose build # BLOCKED — Docker Desktop daemon not running in CI works
 - Clipboard PNG depends on browser support.
 - Lighthouse scores are targets for operator verification, not asserted in CI.
 - Docker build must be verified on a host with a running Docker engine.
+- Яндекс Метрика загружается только после явного согласия; отказ сохраняется в localStorage.
 
 ## READY FOR QA criteria
 

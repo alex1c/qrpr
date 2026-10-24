@@ -52,6 +52,11 @@ test.describe('QR-PR smoke', () => {
 	test('scanner recognizes generated QR image', async ({ page }, testInfo) => {
 		const payload = 'https://qr-pr.ru/scan-test'
 		await page.goto('/qr-url')
+		// Dismiss analytics banner if present so it does not cover controls.
+		const deny = page.getByRole('button', { name: 'Отказаться' })
+		if (await deny.isVisible().catch(() => false)) {
+			await deny.click()
+		}
 		await page.locator('#url').fill(payload)
 		await expect(page.getByText('Готово к скачиванию')).toBeVisible({
 			timeout: 10_000,
@@ -59,13 +64,22 @@ test.describe('QR-PR smoke', () => {
 
 		const filePath = path.join(testInfo.outputDir, 'sample-qr.png')
 		fs.mkdirSync(testInfo.outputDir, { recursive: true })
-		await page.locator('.qr-preview svg').screenshot({ path: filePath })
+		// Prefer exported PNG (scannable modules) over SVG screenshot.
+		const downloadPromise = page.waitForEvent('download')
+		await page.getByRole('button', { name: 'Скачать PNG' }).click()
+		const download = await downloadPromise
+		await download.saveAs(filePath)
 
 		await page.goto('/scan')
+		const denyScan = page.getByRole('button', { name: 'Отказаться' })
+		if (await denyScan.isVisible().catch(() => false)) {
+			await denyScan.click()
+		}
 		await page.locator('input[type="file"]').setInputFiles(filePath)
 		await expect(page.getByText('QR распознан')).toBeVisible({ timeout: 15_000 })
 		await expect(page.getByText(payload)).toBeVisible()
 	})
+
 
 	test('mobile viewport home', async ({ page }) => {
 		await page.setViewportSize({ width: 375, height: 812 })

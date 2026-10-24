@@ -1,15 +1,16 @@
 import { Breadcrumbs, Prose } from '@/components/seo/page-shell'
 import {
-	CONTACT_EMAIL_PLACEHOLDER,
-	LEGAL_ADDRESS_PLACEHOLDER,
-	LEGAL_ENTITY_PLACEHOLDER,
+	PROJECT_BRAND,
+	PROJECT_LINK_LABEL,
+	PROJECT_URL,
+	SITE_NAME,
 	SOCIAL,
 } from '@/config/site'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 
 export const metadata = buildPageMetadata({
 	title: 'Контакты',
-	description: 'Контактные данные QR-PR. Реквизиты будут заполнены владельцем проекта.',
+	description: `Контакты ${SITE_NAME}: проект ${PROJECT_BRAND}, сайт ${PROJECT_URL.replace('https://', '')}.`,
 	path: '/contact',
 })
 
@@ -22,16 +23,37 @@ export default function ContactPage () {
 			</h1>
 			<Prose>
 				<p>
-					Владелец / оператор: <strong>{LEGAL_ENTITY_PLACEHOLDER}</strong>
+					{SITE_NAME} — онлайн-сервис в рамках проекта{' '}
+					<a
+						href={PROJECT_URL}
+						className="text-[var(--accent)] hover:underline"
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{PROJECT_BRAND}
+					</a>
+					. На этой странице не публикуются email, ФИО, почтовый адрес и
+					юридические реквизиты — они не указаны намеренно, без подстановки
+					вымышленных данных.
 				</p>
 				<p>
-					Email: <strong>{CONTACT_EMAIL_PLACEHOLDER}</strong>
+					Сайт проекта:{' '}
+					<a
+						href={PROJECT_URL}
+						className="text-[var(--accent)] hover:underline"
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{PROJECT_URL}
+					</a>
 				</p>
 				<p>
-					Адрес: <strong>{LEGAL_ADDRESS_PLACEHOLDER}</strong>
+					{PROJECT_LINK_LABEL} не описывается здесь как юридическое лицо: это
+					название проекта / бренда. Для связи используйте контакты, указанные
+					на сайте ForestMusic, если они там опубликованы.
 				</p>
 				<p>
-					Репозиторий:{' '}
+					Исходный код:{' '}
 					<a
 						href={SOCIAL.github}
 						className="text-[var(--accent)] hover:underline"
@@ -40,10 +62,6 @@ export default function ContactPage () {
 					>
 						{SOCIAL.github}
 					</a>
-				</p>
-				<p>
-					Поля с пометкой «указать…» намеренно оставлены пустыми-заглушками без
-					вымышленных данных — заполните их перед публичным запуском.
 				</p>
 			</Prose>
 		</div>

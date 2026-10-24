@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Manrope, Onest, JetBrains_Mono } from 'next/font/google'
+import { AnalyticsProvider } from '@/components/analytics/analytics-provider'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeProvider } from '@/components/layout/theme-provider'
@@ -74,6 +75,7 @@ export default function RootLayout ({ children }: LayoutProps<'/'>) {
 						{children}
 					</main>
 					<Footer />
+					<AnalyticsProvider />
 				</ThemeProvider>
 			</body>
 		</html>
