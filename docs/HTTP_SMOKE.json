@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "bytes": 76902,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/generator",
+    "status": 200,
+    "bytes": 51660,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/scan",
+    "status": 200,
+    "bytes": 41558,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/check",
+    "status": 200,
+    "bytes": 41685,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/robots.txt",
+    "status": 200,
+    "bytes": 101,
+    "contentType": "text/plain"
+  },
+  {
+    "path": "/sitemap.xml",
+    "status": 200,
+    "bytes": 3281,
+    "contentType": "application/xml"
+  },
+  {
+    "path": "/icon",
+    "status": 200,
+    "bytes": 414,
+    "contentType": "image/png"
+  },
+  {
+    "path": "/opengraph-image",
+    "status": 200,
+    "bytes": 79620,
+    "contentType": "image/png"
+  },
+  {
+    "path": "/favicon.ico",
+    "status": 200,
+    "bytes": 15086,
+    "contentType": "image/x-icon"
+  },
+  {
+    "path": "/audit-missing-route",
+    "status": 404,
+    "bytes": 31761,
+    "contentType": "text/html; charset=utf-8"
+  }
+]
