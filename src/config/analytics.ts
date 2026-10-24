@@ -1,8 +1,9 @@
 /**
  * Yandex Metrika configuration for QR-PR.
+ * Counter 68948335 is created exclusively for qr-pr.ru — do not use other counters.
  * Script loads only after explicit analytics consent.
  */
-export const YANDEX_METRIKA_ID = 68948335
+export const YANDEX_METRIKA_ID = 68948335 as const
 
 export const YANDEX_METRIKA_OPTIONS = {
 	webvisor: false,

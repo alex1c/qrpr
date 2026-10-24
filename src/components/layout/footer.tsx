@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Logo } from '@/components/layout/logo'
 import { QR_TOOLS, EXTRA_TOOL_PAGES } from '@/config/tools'
 import {
+	PROJECT_DEVELOPER_LABEL,
 	PROJECT_LINK_LABEL,
 	PROJECT_URL,
 	SITE_TAGLINE,
@@ -24,7 +25,7 @@ export function Footer () {
 							rel="noopener noreferrer"
 							target="_blank"
 						>
-							{PROJECT_LINK_LABEL}
+							{PROJECT_DEVELOPER_LABEL}
 						</a>
 					</p>
 				</div>

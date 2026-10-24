@@ -1,7 +1,7 @@
 import { Breadcrumbs, Prose } from '@/components/seo/page-shell'
 import {
 	PROJECT_BRAND,
-	PROJECT_LINK_LABEL,
+	PROJECT_DEVELOPER_LABEL,
 	PROJECT_URL,
 	SOCIAL,
 } from '@/config/site'
@@ -34,17 +34,17 @@ export default function AboutPage () {
 					и не ставим водяные знаки на обычные статические коды.
 				</p>
 				<p>
-					QR-PR развивается как{' '}
+					{PROJECT_DEVELOPER_LABEL}:{' '}
 					<a
 						href={PROJECT_URL}
 						className="text-[var(--accent)] hover:underline"
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						{PROJECT_LINK_LABEL}
+						{PROJECT_URL}
 					</a>
-					. {PROJECT_BRAND} указан как проект / бренд, без утверждения о статусе
-					юридического лица на этой странице.
+					. {PROJECT_BRAND} — проект и сайт разработчика, не юридическое лицо на
+					этой странице.
 				</p>
 				<p>
 					В планах — пакетная генерация, этикетки и динамические QR для бизнеса.

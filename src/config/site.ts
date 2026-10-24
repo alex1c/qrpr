@@ -12,12 +12,15 @@ export const SITE_DESCRIPTION =
 	'Создавайте статические QR-коды бесплатно: URL, Wi‑Fi, визитки, Telegram, WhatsApp и другие типы. Без регистрации и водяных знаков. Генерация в браузере.'
 
 /**
- * Project attribution — not a verified legal-entity claim.
- * Do not invent email, names, addresses, or company registration details.
+ * Developer project / site attribution (not a legal-entity claim).
+ * Sole public contact for QR-PR: PROJECT_URL.
+ * Do not add email, phone, postal address, or company registration details.
  */
 export const PROJECT_BRAND = 'ForestMusic'
 export const PROJECT_URL = 'https://forest-music.ru'
 export const PROJECT_LINK_LABEL = 'Проект ForestMusic'
+/** Short label for footer / about: developer project site, not a legal person. */
+export const PROJECT_DEVELOPER_LABEL = 'Сайт разработчика — ForestMusic'
 
 export const SOCIAL = {
 	github: 'https://github.com/alex1c/qrpr',

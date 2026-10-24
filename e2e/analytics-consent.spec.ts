@@ -94,6 +94,9 @@ test.describe('analytics consent', () => {
 			page.getByRole('link', { name: 'https://forest-music.ru' }),
 		).toHaveAttribute('href', 'https://forest-music.ru')
 		await expect(page.getByText(/указать/i)).toHaveCount(0)
+		await expect(page.getByText(/единственный публичный контакт/i)).toBeVisible()
+		await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0)
+		await expect(page.locator('a[href^="tel:"]')).toHaveCount(0)
 	})
 
 	test('generator still works with consent banner visible', async ({

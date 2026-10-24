@@ -74,7 +74,7 @@ describe('analytics consent storage', () => {
 })
 
 describe('metrika options safety', () => {
-	it('keeps webvisor and clickmap off', () => {
+	it('uses only the qr-pr.ru counter and keeps webvisor/clickmap off', () => {
 		expect(YANDEX_METRIKA_ID).toBe(68948335)
 		expect(YANDEX_METRIKA_OPTIONS.webvisor).toBe(false)
 		expect(YANDEX_METRIKA_OPTIONS.clickmap).toBe(false)
@@ -83,3 +83,4 @@ describe('metrika options safety', () => {
 		expect(YANDEX_METRIKA_OPTIONS.ecommerce).toBe(false)
 	})
 })
+
